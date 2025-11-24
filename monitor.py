@@ -10,7 +10,6 @@ from typing import Deque, Dict, List, Optional, Set, Tuple
 import requests
 import pytz
 import apscheduler.util as aps_util
-from tzlocal import get_localzone
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
 from telegram.ext import (
     Application,
@@ -126,12 +125,7 @@ def enforce_pytz_timezone() -> None:
     """Ensure APScheduler uses a pytz timezone to avoid zoneinfo TypeError."""
 
     try:
-        tz = get_localzone()
-        if not isinstance(tz, pytz.tzinfo.BaseTzInfo) and hasattr(tz, "key"):
-            tz = pytz.timezone(tz.key)
-        if not isinstance(tz, pytz.tzinfo.BaseTzInfo):
-            tz = pytz.UTC
-        aps_util.get_localzone = lambda: tz  # type: ignore[assignment]
+        aps_util.get_localzone = lambda: pytz.UTC  # type: ignore[assignment]
     except Exception as exc:  # pragma: no cover - defensive guard
         logging.warning("Could not enforce pytz timezone: %s", exc)
 
