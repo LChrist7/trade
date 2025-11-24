@@ -125,6 +125,21 @@ def enforce_pytz_timezone() -> None:
 
     try:
         aps_util.get_localzone = lambda: pytz.UTC  # type: ignore[assignment]
+
+        def _pytz_astimezone(obj=None):  # type: ignore[override]
+            if obj is None:
+                return pytz.UTC
+            try:
+                if isinstance(obj, pytz.tzinfo.BaseTzInfo):
+                    return obj
+                tz_name = getattr(obj, "key", None) or getattr(obj, "zone", None)
+                if tz_name:
+                    return pytz.timezone(str(tz_name))
+            except Exception:
+                pass
+            return pytz.UTC
+
+        aps_util.astimezone = _pytz_astimezone  # type: ignore[assignment]
     except Exception as exc:  # pragma: no cover - defensive guard
         logging.warning("Could not enforce pytz timezone: %s", exc)
 
