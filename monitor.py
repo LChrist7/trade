@@ -8,6 +8,7 @@ from dataclasses import dataclass, field
 from typing import Deque, Dict, List, Optional, Set, Tuple
 
 import requests
+import pytz
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
 from telegram.ext import (
     Application,
@@ -15,6 +16,7 @@ from telegram.ext import (
     CallbackQueryHandler,
     CommandHandler,
     ConversationHandler,
+    JobQueue,
     MessageHandler,
     filters,
 )
@@ -283,7 +285,8 @@ async def main() -> None:
     thresholds = Thresholds(default_threshold=default_threshold, custom_thresholds=custom_thresholds)
     dispatcher = AlertDispatcher()
 
-    application: Application = ApplicationBuilder().token(telegram_token).build()
+    job_queue = JobQueue(timezone=pytz.UTC)
+    application: Application = ApplicationBuilder().token(telegram_token).job_queue(job_queue).build()
     dispatcher.set_application(application)
 
     chat_id_env = os.getenv("TELEGRAM_CHAT_ID", DEFAULT_TELEGRAM_CHAT_ID)
