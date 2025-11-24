@@ -328,6 +328,10 @@ async def main() -> None:
     application: Application = ApplicationBuilder().token(telegram_token).build()
     dispatcher.set_application(application)
 
+    # Persist shared objects for handlers before polling starts
+    application.bot_data["thresholds"] = thresholds
+    application.bot_data["dispatcher"] = dispatcher
+
     chat_id_env = os.getenv("TELEGRAM_CHAT_ID", DEFAULT_TELEGRAM_CHAT_ID)
     if chat_id_env:
         try:
