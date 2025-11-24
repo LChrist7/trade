@@ -9,6 +9,7 @@ from typing import Deque, Dict, List, Optional, Set, Tuple
 
 import requests
 import pytz
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
 from telegram.ext import (
     Application,
@@ -285,8 +286,7 @@ async def main() -> None:
     thresholds = Thresholds(default_threshold=default_threshold, custom_thresholds=custom_thresholds)
     dispatcher = AlertDispatcher()
 
-    job_queue = JobQueue()
-    job_queue.scheduler.configure(timezone=pytz.UTC)
+    job_queue = JobQueue(scheduler=AsyncIOScheduler(timezone=pytz.UTC))
     application: Application = ApplicationBuilder().token(telegram_token).job_queue(job_queue).build()
     dispatcher.set_application(application)
 
