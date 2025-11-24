@@ -143,6 +143,18 @@ def enforce_pytz_timezone() -> None:
         aps_util.astimezone = _pytz_astimezone  # type: ignore[assignment]
         aps_base.get_localzone = aps_util.get_localzone  # type: ignore[assignment]
         aps_base.astimezone = _pytz_astimezone  # type: ignore[assignment]
+
+        original_configure = aps_base.BaseScheduler._configure
+
+        def _configure_with_pytz(self, config):  # type: ignore[override]
+            tz_value = config.pop("timezone", None)
+            if tz_value is None:
+                config["timezone"] = pytz.UTC
+            else:
+                config["timezone"] = _pytz_astimezone(tz_value)
+            return original_configure(self, config)
+
+        aps_base.BaseScheduler._configure = _configure_with_pytz  # type: ignore[assignment]
     except Exception as exc:  # pragma: no cover - defensive guard
         logging.warning("Could not enforce pytz timezone: %s", exc)
 
