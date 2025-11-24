@@ -9,7 +9,8 @@ from typing import Deque, Dict, List, Optional, Set, Tuple
 
 import requests
 import pytz
-from apscheduler.schedulers.asyncio import AsyncIOScheduler
+import apscheduler.util as aps_util
+from tzlocal import get_localzone
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
 from telegram.ext import (
     Application,
@@ -119,6 +120,20 @@ def get_env_float(name: str, default: float) -> float:
     except ValueError:
         logging.warning("Invalid value for %s, using default %s", name, default)
         return float(default)
+
+
+def enforce_pytz_timezone() -> None:
+    """Ensure APScheduler uses a pytz timezone to avoid zoneinfo TypeError."""
+
+    try:
+        tz = get_localzone()
+        if not isinstance(tz, pytz.tzinfo.BaseTzInfo) and hasattr(tz, "key"):
+            tz = pytz.timezone(tz.key)
+        if not isinstance(tz, pytz.tzinfo.BaseTzInfo):
+            tz = pytz.UTC
+        aps_util.get_localzone = lambda: tz  # type: ignore[assignment]
+    except Exception as exc:  # pragma: no cover - defensive guard
+        logging.warning("Could not enforce pytz timezone: %s", exc)
 
 
 async def monitor_prices(
@@ -266,6 +281,7 @@ async def show_thresholds(update: Update, context) -> int:
 
 async def main() -> None:
     load_env_file()
+    enforce_pytz_timezone()
 
     telegram_token = os.getenv("TELEGRAM_TOKEN", DEFAULT_TELEGRAM_TOKEN)
     if not telegram_token:
@@ -286,7 +302,8 @@ async def main() -> None:
     thresholds = Thresholds(default_threshold=default_threshold, custom_thresholds=custom_thresholds)
     dispatcher = AlertDispatcher()
 
-    job_queue = JobQueue(scheduler=AsyncIOScheduler(timezone=pytz.UTC))
+    job_queue = JobQueue()
+    job_queue.scheduler.configure(timezone=pytz.UTC)
     application: Application = ApplicationBuilder().token(telegram_token).job_queue(job_queue).build()
     dispatcher.set_application(application)
 
