@@ -285,7 +285,8 @@ async def main() -> None:
     thresholds = Thresholds(default_threshold=default_threshold, custom_thresholds=custom_thresholds)
     dispatcher = AlertDispatcher()
 
-    job_queue = JobQueue(timezone=pytz.UTC)
+    job_queue = JobQueue()
+    job_queue.scheduler.configure(timezone=pytz.UTC)
     application: Application = ApplicationBuilder().token(telegram_token).job_queue(job_queue).build()
     dispatcher.set_application(application)
 
