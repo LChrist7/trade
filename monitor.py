@@ -17,7 +17,6 @@ from telegram.ext import (
     CallbackQueryHandler,
     CommandHandler,
     ConversationHandler,
-    JobQueue,
     MessageHandler,
     filters,
 )
@@ -296,9 +295,7 @@ async def main() -> None:
     thresholds = Thresholds(default_threshold=default_threshold, custom_thresholds=custom_thresholds)
     dispatcher = AlertDispatcher()
 
-    job_queue = JobQueue()
-    job_queue.scheduler.configure(timezone=pytz.UTC)
-    application: Application = ApplicationBuilder().token(telegram_token).job_queue(job_queue).build()
+    application: Application = ApplicationBuilder().token(telegram_token).build()
     dispatcher.set_application(application)
 
     chat_id_env = os.getenv("TELEGRAM_CHAT_ID", DEFAULT_TELEGRAM_CHAT_ID)
