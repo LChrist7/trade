@@ -10,6 +10,7 @@ from typing import Deque, Dict, List, Optional, Set, Tuple
 import requests
 import pytz
 import apscheduler.util as aps_util
+import apscheduler.schedulers.base as aps_base
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
 from telegram.ext import (
     Application,
@@ -140,6 +141,8 @@ def enforce_pytz_timezone() -> None:
             return pytz.UTC
 
         aps_util.astimezone = _pytz_astimezone  # type: ignore[assignment]
+        aps_base.get_localzone = aps_util.get_localzone  # type: ignore[assignment]
+        aps_base.astimezone = _pytz_astimezone  # type: ignore[assignment]
     except Exception as exc:  # pragma: no cover - defensive guard
         logging.warning("Could not enforce pytz timezone: %s", exc)
 
