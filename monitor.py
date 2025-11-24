@@ -28,6 +28,8 @@ else:
 BINANCE_TICKER_URL = "https://api.binance.com/api/v3/ticker/24hr"
 WINDOW_SECONDS = 15 * 60
 FETCH_INTERVAL = 5 * 60
+DEFAULT_TELEGRAM_TOKEN = "8269111976:AAF6OsENWrVsTXJEftgu_NoTXCPXWTdX5gQ"
+DEFAULT_TELEGRAM_CHAT_ID = "1108359014"
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 
@@ -262,7 +264,7 @@ async def show_thresholds(update: Update, context) -> int:
 async def main() -> None:
     load_env_file()
 
-    telegram_token = os.getenv("TELEGRAM_TOKEN")
+    telegram_token = os.getenv("TELEGRAM_TOKEN", DEFAULT_TELEGRAM_TOKEN)
     if not telegram_token:
         logging.error("TELEGRAM_TOKEN is not set; bot cannot start")
         return
@@ -284,7 +286,7 @@ async def main() -> None:
     application: Application = ApplicationBuilder().token(telegram_token).build()
     dispatcher.set_application(application)
 
-    chat_id_env = os.getenv("TELEGRAM_CHAT_ID")
+    chat_id_env = os.getenv("TELEGRAM_CHAT_ID", DEFAULT_TELEGRAM_CHAT_ID)
     if chat_id_env:
         try:
             dispatcher.chat_ids.add(int(chat_id_env))

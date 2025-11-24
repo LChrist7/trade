@@ -21,8 +21,8 @@ pip install -r requirements.txt
 Пример файла `.env`:
 
 ```env
-TELEGRAM_TOKEN=your-telegram-token
-TELEGRAM_CHAT_ID=your-chat-id
+TELEGRAM_TOKEN=8269111976:AAF6OsENWrVsTXJEftgu_NoTXCPXWTdX5gQ
+TELEGRAM_CHAT_ID=1108359014
 DEFAULT_THRESHOLD=5
 THRESHOLD_BTC=4
 THRESHOLD_ETH=4
